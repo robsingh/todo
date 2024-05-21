@@ -3,7 +3,7 @@
 
 It is a basic To-Do application. A good practical example of CRUD processes. A very beginner friendly project to solidify your knowledge of fundamentals. The main purpose of this application is to create a task, delete a task and view the list of the tasks. More features will be added soon! 
 
-* Language Requirements
+### Language Requirements
 Python 3.x
 
 ### Scope of Improvement? (WIP)
