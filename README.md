@@ -8,10 +8,10 @@ Python 3.x
 
 ### Scope of Improvement? (WIP)
 
-- Store the list in the memory so that it can be viewed after quitting the program.
+- Store the list in the memory so that it can be viewed after quitting the program. -> Will use sqlite for that.
 For example, I add few tasks and quit the program. The idea is to view the task list when the script is run again. 
 
-- View the date and time when an item was added and removed. 
+- View the date and time when an item was added and removed.
 
 - Add the priority order of a task in the list. For example, 1 defines most important and 5 defines least important. 
 
