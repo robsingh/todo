@@ -5,11 +5,30 @@ task_list = []
 
 def add_task():
     task_name = input("Enter the task details: ")
-    task_list.append(task_name)
     now = datetime.now()
     date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
-    today_day = now.strftime("%A")
-    print(f"Task '{task_name}' added to the list on '{today_day}' at {date_time}.")
+    
+    #input validation
+    while True:
+        try:
+            task_priority = int(input("Enter task's priority (1-5): "))
+            if 1 <= task_priority <= 5:
+                break
+            else:
+                print("Please enter a number between 1 and 5.")
+        except ValueError:
+            print("Invalid Input. Please enter a valid number.")
+
+    task = {
+        "name": task_name,
+        "created_at": date_time,
+        "priority": task_priority,
+        "completed": False, #default to not completed
+    }
+
+    task_list.append(task)
+    
+    print(f"Task '{task_name}' added to the list on {date_time}.")
 
 
 def list_task():
