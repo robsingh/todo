@@ -18,4 +18,6 @@ Python 3.x
     * Added the functionality to add the priority order of the task.
 
 - Functionality of a reminder to notify what needs to be done before EOD. (very vague idea, still working on it)
+
+- Mark a task as completed.
  

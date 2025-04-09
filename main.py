@@ -37,7 +37,27 @@ def list_task():
       else:
         print("Current tasks: ")
         for index, task in enumerate(task_list, start=1):
-            print(f"Task {index} -> {task}")
+            status = "✅ Done" if task["completed"] else "⌛️ Pending"
+            print(f"{index}. {task['name']} | Priority: {task['priority']} | Status: {status} | Added on: {task['created_at']}")
+
+
+def mark_task_completed():
+    list_task()
+    if not task_list:
+        return "No tasks to mark."
+    try:
+        task_num = int(input("Enter the task # to mark as completed: "))
+        index = task_num - 1
+        if 0 <= index < len(task_list):
+            if task_list[index]["completed"]:
+                print(f"Task '{task_list[index]['name']}' is already marked as completed.")
+            else:
+                task_list[index]["completed"] = True
+                print(f"Task '{task_list[index]['name']}' is marked as completed.")
+        else:
+            print(f"Invalid task number.")
+    except ValueError:
+        print(f"Invalid Input. Please enter a valid number.")
 
     
 def delete_task():
@@ -67,7 +87,9 @@ if __name__ == "__main__":
             print()
             print("3. List Tasks")
             print()
-            print("4. Quit!")
+            print("4. Mark a task as Completed")
+            print()
+            print("5. Quit!")
             print()
 
             choice = input("Enter your choice: ") # use int(input()) later
@@ -79,6 +101,8 @@ if __name__ == "__main__":
             elif (choice == "3"):
                 list_task()
             elif (choice == "4"):
+                mark_task_completed()
+            elif (choice == "5"):
                 break
             else:
                 print("Invalid Input! Please enter an integer!")
