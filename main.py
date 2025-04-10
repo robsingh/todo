@@ -37,7 +37,8 @@ def list_task():
         print("No tasks currently!")
       else:
         print("Current tasks: ")
-        for index, task in enumerate(task_list, start=1):
+        sorted_tasks = sorted(task_list, key=lambda x:x['priority'])
+        for index, task in enumerate(sorted_tasks, start=1):
             status = "✅ Done" if task["completed"] else "⌛️ Pending"
             print(f"{index}. {task['name']} | Priority: {task['priority']} | Status: {status} | Added on: {task['created_at']}")
 
