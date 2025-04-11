@@ -1,5 +1,6 @@
 from datetime import date
 from datetime import datetime
+import sqlite3
 
 task_list = []
 deleted_tasks = []
@@ -9,7 +10,7 @@ def add_task():
     now = datetime.now()
     date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
     
-    #input validation
+    #input validation for priority
     while True:
         try:
             task_priority = int(input("Enter task's priority (1-5): "))
@@ -20,14 +21,7 @@ def add_task():
         except ValueError:
             print("Invalid Input. Please enter a valid number.")
 
-    task = {
-        "name": task_name,
-        "created_at": date_time,
-        "priority": task_priority,
-        "completed": False, #default to not completed
-    }
-
-    task_list.append(task)
+    add_task_to_db(task_name, date_time, task_priority)
     
     print(f"Task '{task_name}' added to the list on {date_time}.")
 
@@ -89,9 +83,67 @@ def view_deleted_tasks():
         for index, task in enumerate(deleted_tasks, start=1):
             print(f"{task['name']} | Added on: {task['created_at']} | Removed at: {task['removed_at']} ")
 
-    
+
+def setup_database():
+    try:
+        with sqlite3.connect('todo.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS tasks(
+                           id INTEGER PRIMARY KEY AUTOINCREMENT,
+                           name TEXT NOT NULL,
+                           created_at TEXT NOT NULL,
+                           priority INTEGER NOT NULL,
+                           completed INTEGER DEFAULT 0,
+                           removed_at TEXT)
+            ''')
+            conn.commit()
+
+    except sqlite3.OperationalError as e:
+        print(f"Failed to open database: {e}")
+
+
+def add_task_to_db(name, created_at, priority):
+    try:
+        with sqlite3.connect('todo.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                        INSERT INTO tasks(name,created_at,priority)
+                        VALUES(?,?,?)''',
+                        (name, created_at, priority))
+            conn.commit()
+
+    except sqlite3.OperationalError as e:
+        print(f"Failed to connect with the database: {e}")
+
+
+def list_tasks_from_db():
+    try:
+        with sqlite3.connect('todo.db') as conn:
+            cursor = conn.cursor()
+            #get all tasks that have not been deleted
+            cursor.execute('''
+                    SELECT id, name, created_at, priority, completed
+                    FROM tasks where removed_at IS NULL
+            ''')
+            records = cursor.fetchall()
+            if not records:
+                print(f"No active tasks found.")
+                return
+            
+            print("Current Tasks:")
+            for index, row in enumerate(records, start=1):
+                task_id, name, created_at, priority, completed = row
+                status = "✅ Done" if completed else "⌛️ Pending"
+                print(f"{index}. {name} | Priority: {priority} | Status: {status} | Added on: {created_at}")
+
+    except sqlite3.OperationalError as e:
+            print(f"Oops! Error: {e}")
+
+
 
 if __name__ == "__main__":
+        setup_database()
         print("Welcome to the To-Do list app, a very introductory app!")
         while True:
             print("\n")
@@ -126,3 +178,4 @@ if __name__ == "__main__":
                 break
             else:
                 print("Invalid Input! Please enter an integer!")
+            
