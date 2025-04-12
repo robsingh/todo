@@ -9,7 +9,7 @@ Python 3.x
 ### Scope of Improvement? (WIP)
 
 - Store the list in the memory so that it can be viewed after quitting the program. 
-    * Planning to use sqlite for that.
+    * SQLite database.
 
 - View the date and time when an item was added and removed. 
     * Added the functionality to view when was a task is added.
