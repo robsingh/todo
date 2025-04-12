@@ -132,13 +132,39 @@ def list_tasks_from_db():
                 return
             
             print("Current Tasks:")
-            for index, row in enumerate(records, start=1):
+            print(f"{'ID':<4} {'Task':<30} {'Priority':<8} {'Status':<10} {'Created At'}")
+            print("-" * 70)
+            
+            for row in records:
                 task_id, name, created_at, priority, completed = row
                 status = "✅ Done" if completed else "⌛️ Pending"
-                print(f"{index}. {name} | Priority: {priority} | Status: {status} | Added on: {created_at}")
+                print(f"{task_id}:<4 {name:<30} {priority:<8} {status:<10} {created_at}")
 
     except sqlite3.OperationalError as e:
             print(f"Oops! Error: {e}")
+
+
+def mark_task_completed_in_db():
+    list_tasks_from_db()
+    try:
+        task_id = int(input("Enter the task ID to mark as completed: "))
+        with sqlite3.connect('todo.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                        UPDATE tasks
+                        SET completed = 1
+                        where id = ? AND removed_at IS NULL
+                        ''', (task_id,))
+            conn.commit()
+
+            if cursor.rowcount == 0:
+                print("❌ No active task found with that ID.")
+            else:
+                print("✅ Task marked as completed.")
+    except ValueError:
+        print("⚠️ Invalid Input! Please enter a valid task ID.")
+    except sqlite3.OperationalError as e:
+        print(f"Database Error: {e}")
 
 
 
@@ -171,7 +197,7 @@ if __name__ == "__main__":
             elif (choice == "3"):
                 list_task()
             elif (choice == "4"):
-                mark_task_completed()
+                mark_task_completed_in_db()
             elif (choice == "5"):
                 view_deleted_tasks()
             elif (choice == "6"):
