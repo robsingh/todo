@@ -2,9 +2,6 @@ from datetime import date
 from datetime import datetime
 import sqlite3
 
-task_list = []
-deleted_tasks = []
-
 def add_task():
     task_name = input("Enter the task details: ")
     now = datetime.now()
@@ -24,64 +21,6 @@ def add_task():
     add_task_to_db(task_name, date_time, task_priority)
     
     print(f"Task '{task_name}' added to the list on {date_time}.")
-
-
-def list_task():
-      if not task_list:
-        print("No tasks currently!")
-      else:
-        print("Current tasks: ")
-        sorted_tasks = sorted(task_list, key=lambda x:x['priority'])
-        for index, task in enumerate(sorted_tasks, start=1):
-            status = "✅ Done" if task["completed"] else "⌛️ Pending"
-            print(f"{index}. {task['name']} | Priority: {task['priority']} | Status: {status} | Added on: {task['created_at']}")
-
-
-def mark_task_completed():
-    list_task()
-    if not task_list:
-        return "No tasks to mark."
-    try:
-        task_num = int(input("Enter the task # to mark as completed: "))
-        index = task_num - 1
-        if 0 <= index < len(task_list):
-            if task_list[index]["completed"]:
-                print(f"Task '{task_list[index]['name']}' is already marked as completed.")
-            else:
-                task_list[index]["completed"] = True
-                print(f"Task '{task_list[index]['name']}' is marked as completed.")
-        else:
-            print(f"Invalid task number.")
-    except ValueError:
-        print(f"Invalid Input. Please enter a valid number.")
-
-    
-def delete_task():
-    list_task()
-    if not task_list:
-        return None
-    try:
-        taskToDelete = int(input("Enter the task # to delete: "))
-        index = taskToDelete - 1 # because user sees tasks starting from 1
-        if 0 <= index < len(task_list):
-            removed_task = task_list.pop(index)
-            removed_at = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
-            removed_task["removed_at"] = removed_at
-            deleted_tasks.append(removed_task)
-            print(f"Task '{removed_task['name']}' was removed at {removed_at}.")
-        else:
-            print(f"Task #{taskToDelete} was not found! Please try again with correct input.")
-    except ValueError:
-        print("Invalid Input! Please enter a number.")
-    
-
-def view_deleted_tasks():
-    if not deleted_tasks:
-        return None
-    else:
-        print("Deleted Tasks: ")
-        for index, task in enumerate(deleted_tasks, start=1):
-            print(f"{task['name']} | Added on: {task['created_at']} | Removed at: {task['removed_at']} ")
 
 
 def setup_database():
@@ -167,6 +106,52 @@ def mark_task_completed_in_db():
         print(f"Database Error: {e}")
 
 
+def delete_task_from_db():
+    list_tasks_from_db()
+    try:
+        task_id = int(input("Enter the task ID to delete: "))
+        removed_at = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
+
+        with sqlite3.connect('todo.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                UPDATE tasks
+                SET removed_at = ?
+                where id = ? AND removed_at IS NULL
+                ''', (removed_at, task_id))
+            conn.commit()
+
+            if cursor.rowcount == 0:
+                print("❌ No active tasks found with that ID.")
+            else:
+                print(f"🗑️ Task ID {task_id} marked as deleted at {removed_at}.")
+    
+    except ValueError:
+        print("⚠️ Invalid Input! Please enter a valid task ID.")
+    except sqlite3.OperationalError as e:
+        print(f"Database Error: {e}")
+
+
+def view_deleted_tasks_from_db():
+    list_tasks_from_db()
+    try:
+        with sqlite3.connect('todo.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+            SELECT id, name, created_at, removed_at
+            FROM tasks
+            WHERE removed_at IS NULL
+            ORDER BY removed_at DESC
+        ''')
+            deleted = cursor.fetchall()
+            if not deleted:
+                print("🧼 No deleted tasks found!")
+            else:
+                print(f"{'ID':<4} {'Task':<30} {'Created At':<20} {'Removed At'}")
+    
+    except sqlite3.OperationalError as e:
+        print(f"Database Error: {e}")
+
 
 if __name__ == "__main__":
         setup_database()
@@ -193,13 +178,13 @@ if __name__ == "__main__":
             if (choice == "1"):
                 add_task()
             elif (choice == "2"):
-                delete_task()
+                delete_task_from_db()
             elif (choice == "3"):
-                list_task()
+                list_tasks_from_db()
             elif (choice == "4"):
                 mark_task_completed_in_db()
             elif (choice == "5"):
-                view_deleted_tasks()
+                view_deleted_tasks_from_db()
             elif (choice == "6"):
                 break
             else:

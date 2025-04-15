@@ -10,6 +10,7 @@ Python 3.x
 
 - Store the list in the memory so that it can be viewed after quitting the program. 
     * SQLite database.
+        * A cursor in SQLite is an object that allows you to execute SQL queries and fetch results. Basically a middleware between SQLite database connection and SQL query. It is created after giving connection to SQLite database.
 
 - View the date and time when an item was added and removed. 
     * Added the functionality to view when was a task is added.
