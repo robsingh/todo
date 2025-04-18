@@ -27,6 +27,53 @@ class TaskManager:
     def __init__(self):
         self.tasks = []
         self.deleted_tasks = []
+        self.setup_database() #ensures DB is ready when object is created
+
+    def setup_database(self):
+        '''
+        creates the task table if it does not exist
+        '''
+        try:
+            with sqlite3.connect('todo.db') as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    '''
+                    CREATE TABLE IF NOT EXISTS tasks(
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    priority INTEGER NOT NULL,
+                    completed INTEGER DEFAULT 0,
+                    removed_at TEXT)'''
+                )
+                conn.commit()
+        except sqlite3.OperationalError as e:
+            print(f"Database Error: {e}")
+
+
+    def add_task(self,name,priority):
+        '''
+        create a task object
+        save it to db
+        append it to self.tasks
+        '''
+        try:
+            with sqlite3.connect('todo.db') as conn:
+                cursor = conn.cursor()
+                created_at = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
+                cursor.execute(
+                '''
+                INSERT INTO tasks(name,created_at,priority)
+                VALUES (?,?,?)''',
+                (name, created_at, priority))
+                task_id = cursor.lastrowid
+                task = Task(task_id,name,created_at, priority)
+                self.tasks.append(task)
+
+        except sqlite3.OperationalError as e:
+            print(f"Failed to connect with the database: {e}")
+
+
 
     def load_from_db(self):
         '''
@@ -55,16 +102,13 @@ class TaskManager:
         except sqlite3.OperationalError as e:
             print(f"Database Error: {e}")
 
-    def add_task(self,name,priority):
+    def list_tasks(self):
         pass
-
-    def delete_task(self, id):
-        pass
-
+    
     def mark_task_completed(self, id):
         pass
 
-    def list_tasks(self):
+    def delete_task(self, id):
         pass
 
     def view_deleted_tasks(self):
