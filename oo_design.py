@@ -24,18 +24,17 @@ class Task:
     
 
 class TaskManager:
+    DB_FILE = 'todo.db'
+    
     def __init__(self):
         self.tasks = []
         self.deleted_tasks = []
         self.setup_database() #ensures DB is ready when object is created
-
-
+        
+    
     def setup_database(self):
-        '''
-        creates the task table if it does not exist
-        '''
         try:
-            with sqlite3.connect('todo.db') as conn:
+            with sqlite3.connect(self.DB_FILE) as conn:
                 cursor = conn.cursor()
                 cursor.execute(
                     '''
@@ -48,18 +47,14 @@ class TaskManager:
                     removed_at TEXT)'''
                 )
                 conn.commit()
+
         except sqlite3.OperationalError as e:
             print(f"Database Error: {e}")
 
 
     def add_task(self,name,priority):
-        '''
-        create a task object
-        save it to db
-        append it to self.tasks
-        '''
         try:
-            with sqlite3.connect('todo.db') as conn:
+            with sqlite3.connect(self.DB_FILE) as conn:
                 cursor = conn.cursor()
                 created_at = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
                 cursor.execute(
@@ -76,9 +71,9 @@ class TaskManager:
 
 
     def load_from_db(self):
-        self.tasks.clear()
+        self.tasks.clear() #clear existing tasks before loading
         try:
-            with sqlite3.connect('todo.db') as conn:
+            with sqlite3.connect(self.DB_FILE) as conn:
                 cursor = conn.cursor()
                 cursor.execute('''
                 SELECT id, name, created_at, priority, completed
@@ -112,7 +107,7 @@ class TaskManager:
     
     def mark_task_completed(self, id):
         try:
-            with sqlite3.connect('todo.db') as conn:
+            with sqlite3.connect(self.DB_FILE) as conn:
                 cursor = conn.cursor()
                 cursor.execute('''
                 UPDATE tasks
@@ -124,7 +119,7 @@ class TaskManager:
                 if cursor.rowcount == 0:
                     print(f"❌ No active tasks found with {id}.")
                 else:
-                    print(f"✅ {id} mark as completed.")
+                    print(f"✅ Marked as completed.")
                 
                 for task in self.tasks:
                     if task.id == id:
@@ -137,6 +132,7 @@ class TaskManager:
         except sqlite3.OperationalError as e:
             print(f"Database Error: {e}")
 
+    
     def delete_task(self, id):
         task_to_delete = None
         for task in self.tasks:
@@ -150,7 +146,7 @@ class TaskManager:
             return
         
         try:
-            with sqlite3.connect('todo.db') as conn:
+            with sqlite3.connect(self.DB_FILE) as conn:
                 cursor = conn.cursor()
                 cursor.execute('''
                                UPDATE tasks
@@ -174,8 +170,9 @@ class TaskManager:
 
 
     def view_deleted_tasks(self):
+        self.deleted_tasks.clear() #prevents duplication
         try:
-            with sqlite3.connect('todo.db') as conn:
+            with sqlite3.connect(self.DB_FILE) as conn:
                 cursor = conn.cursor()
                 cursor.execute('''
                         SELECT id, name, created_at, priority, completed, removed_at
@@ -200,6 +197,35 @@ class TaskManager:
         except sqlite3.OperationalError as e:
             print(f"Database Error: {e}")
 
+
+def run_app():
+    manager = TaskManager()
+    manager.load_from_db()
+    while True:
+        print("\n1. Add Task\n2. View Tasks\n3. Complete Task\n4. Delete Task\n5. View Deleted\n6. Exit")
+        choice = input("Choose an option: ")
+
+        if choice == "1":
+            name = input("Enter task name: ")
+            priority = input("Enter priority (1-5): ")
+            manager.add_task(name, int(priority))
+        elif choice == "2":
+            manager.list_tasks()
+        elif choice == "3":
+            id = int(input("Enter task ID to complete: "))
+            manager.mark_task_completed(id)
+        elif choice == "4":
+            id = int(input("Enter task ID to delete: "))
+            manager.delete_task(id)
+        elif choice == "5":
+            manager.view_deleted_tasks()
+        elif choice == "6":
+            print("Goodbye! 👋")
+            break
+
+
+if __name__ == "__main__":
+    run_app()
                 
 
     
