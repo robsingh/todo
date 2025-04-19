@@ -51,9 +51,17 @@ class TaskManager:
         except sqlite3.OperationalError as e:
             print(f"Database Error: {e}")
 
+    def validate_priority(self, priority):
+        if not isinstance(priority, int) or not (1 <= priority <= 5):
+            raise ValueError("Priority must be an integer between 1 and 5: ")
+        
 
     def add_task(self,name,priority):
         try:
+            self.validate_priority(priority)
+            if not name.strip():
+                raise ValueError("Task name cannot be empty.")
+            
             with sqlite3.connect(self.DB_FILE) as conn:
                 cursor = conn.cursor()
                 created_at = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
@@ -65,7 +73,10 @@ class TaskManager:
                 task_id = cursor.lastrowid
                 task = Task(task_id,name,created_at, priority)
                 self.tasks.append(task)
+                print(f"✅ Task '{name}' added successfully. ")
 
+        except ValueError as ve:
+            print(f"❌ {ve}")
         except sqlite3.OperationalError as e:
             print(f"Failed to connect with the database: {e}")
 
