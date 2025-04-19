@@ -19,8 +19,6 @@ Python 3.x
 - Add the priority order of a task in the list. For example, 1 defines most important and 5 defines least important.
     * Added the functionality to add the priority order of the task.
 
-- Functionality of a reminder to notify what needs to be done before EOD. (very vague idea, still working on it)
-
 - Mark a task as completed.
 
 - Sort Tasks by Priority before Displaying.
